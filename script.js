@@ -178,7 +178,8 @@
     var quantityLine = buildQuantityLine(data);
     var lines = [
       "🍑 그린농원 복숭아 주문",
-      "보내는사람: " + buildContactLine(data.senderName || "그린농원", data.senderPhone, "그린농원")
+      "보내는사람: " + buildContactLine(data.senderName || "그린농원", data.senderPhone, "그린농원"),
+      ""
     ];
 
     return lines.concat(buildReceiverLines(data.receivers, quantityLine)).join("\n");
