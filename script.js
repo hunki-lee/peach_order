@@ -13,7 +13,7 @@
 
   var productFieldLabels = {
     variety: "품종",
-    boxSize: "규격",
+    boxSize: "규격/단가",
     boxCount: "박스 수"
   };
 
@@ -147,7 +147,7 @@
     return parts.length > 0 ? parts.join(" / ") : fallback;
   }
 
-  function buildReceiverLines(receivers) {
+  function buildReceiverLines(receivers, quantityLine) {
     var hasManyReceivers = receivers.length > 1;
     var lines = [];
 
@@ -155,19 +155,20 @@
       var suffix = hasManyReceivers ? " " + (index + 1) : "";
       lines.push("받는사람" + suffix + ": " + buildContactLine(receiver.name, receiver.phone, ""));
       lines.push("주소" + suffix + ": " + formatReceiverAddress(receiver));
+      lines.push("상품" + suffix + ": " + quantityLine);
     });
 
     return lines;
   }
 
   function buildOrderText(data) {
+    var quantityLine = buildQuantityLine(data);
     var lines = [
       "🍑 복숭아 주문",
-      "보내는사람: " + buildContactLine(data.senderName, data.senderPhone, "농장주 이름으로 배송"),
-      "상품: " + buildQuantityLine(data)
+      "보내는사람: " + buildContactLine(data.senderName, data.senderPhone, "농장주 이름으로 배송")
     ];
 
-    return lines.concat(buildReceiverLines(data.receivers)).join("\n");
+    return lines.concat(buildReceiverLines(data.receivers, quantityLine)).join("\n");
   }
 
   function showAlert(message, type) {
