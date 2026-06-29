@@ -1,8 +1,6 @@
 (function () {
   "use strict";
 
-  var DEFAULT_ACCOUNT = "농협 623083-56-013585 박민자";
-
   var fields = {
     senderName: document.getElementById("senderName"),
     senderPhone: document.getElementById("senderPhone"),
@@ -13,11 +11,7 @@
     receiverDetailAddress: document.getElementById("receiverDetailAddress"),
     variety: document.getElementById("variety"),
     boxSize: document.getElementById("boxSize"),
-    boxCount: document.getElementById("boxCount"),
-    payerName: document.getElementById("payerName"),
-    amount: document.getElementById("amount"),
-    bankAccount: document.getElementById("bankAccount"),
-    memo: document.getElementById("memo")
+    boxCount: document.getElementById("boxCount")
   };
 
   var requiredFieldLabels = {
@@ -26,9 +20,7 @@
     receiverBaseAddress: "받는 사람 주소",
     variety: "품종",
     boxSize: "규격",
-    boxCount: "박스 수",
-    payerName: "입금자명",
-    bankAccount: "입금계좌"
+    boxCount: "박스 수"
   };
 
   var orderForm = document.getElementById("orderForm");
@@ -78,11 +70,7 @@
       receiverDetailAddress: valueOf("receiverDetailAddress"),
       variety: valueOf("variety"),
       boxSize: valueOf("boxSize"),
-      boxCount: boxCount,
-      payerName: valueOf("payerName"),
-      amount: valueOf("amount"),
-      bankAccount: valueOf("bankAccount") || DEFAULT_ACCOUNT,
-      memo: valueOf("memo")
+      boxCount: boxCount
     };
   }
 
@@ -91,31 +79,19 @@
     return parts.filter(Boolean).join(" ");
   }
 
+  function buildContactLine(name, phone, fallback) {
+    var parts = [name, phone].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(" / ") : fallback;
+  }
+
   function buildOrderText(data) {
     return [
-      "🍑 복숭아 주문서",
-      "",
-      "1. 보내는사람",
-      "이름: " + data.senderName,
-      "전화번호: " + data.senderPhone,
-      "※ 미입력 시 농장주 이름으로 배송",
-      "",
-      "2. 받는사람",
-      "이름: " + data.receiverName,
-      "전화번호: " + data.receiverPhone,
+      "🍑 복숭아 주문",
+      "보내는사람: " + buildContactLine(data.senderName, data.senderPhone, "농장주 이름으로 배송"),
+      "받는사람: " + buildContactLine(data.receiverName, data.receiverPhone, ""),
       "주소: " + formatReceiverAddress(data),
-      "",
-      "3. 수량",
-      buildQuantityLine(data),
-      "",
-      "4. 입금정보",
-      "입금자명: " + data.payerName,
-      "금액: " + data.amount,
-      "",
-      "입금계좌",
-      data.bankAccount,
-      "",
-      "메모: " + data.memo
+      "상품: " + buildQuantityLine(data)
     ].join("\n");
   }
 
