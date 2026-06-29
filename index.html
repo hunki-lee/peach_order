@@ -33,25 +33,8 @@
 
           <fieldset>
             <legend>받는 사람</legend>
-            <div class="field-grid two-columns">
-              <label class="field">
-                <span>이름 <strong aria-label="필수">*</strong></span>
-                <input id="receiverName" name="receiverName" type="text" autocomplete="name" required>
-              </label>
-              <label class="field">
-                <span>전화번호 <strong aria-label="필수">*</strong></span>
-                <input id="receiverPhone" name="receiverPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" required>
-              </label>
-              <div class="field full-width">
-                <span>주소 <strong aria-label="필수">*</strong></span>
-                <div class="address-row">
-                  <input id="receiverPostcode" name="receiverPostcode" type="text" placeholder="우편번호" readonly aria-label="우편번호">
-                  <button id="addressSearchButton" class="secondary-button" type="button">주소 검색</button>
-                </div>
-                <input id="receiverBaseAddress" name="receiverBaseAddress" type="text" placeholder="주소 검색 버튼을 눌러 선택해 주세요" readonly required>
-                <input id="receiverDetailAddress" name="receiverDetailAddress" type="text" autocomplete="street-address" placeholder="상세주소 예: 101동 1001호">
-              </div>
-            </div>
+            <div id="receiverList" class="receiver-list"></div>
+            <button id="addReceiverButton" class="add-button" type="button">+ 받는 사람 추가</button>
           </fieldset>
 
           <fieldset>
@@ -93,8 +76,43 @@
 
         <div id="alertBox" class="alert-box" role="status" aria-live="polite" hidden></div>
         <textarea id="orderText" class="order-text" readonly aria-label="생성된 주문 문구"></textarea>
+        <div class="account-panel" aria-label="입금계좌">
+          <div>
+            <p class="account-label">입금계좌</p>
+            <p id="bankAccountText" class="account-text">농협 623083-56-013585 박민자</p>
+          </div>
+          <button id="copyAccountButton" class="secondary-button account-copy-button" type="button">계좌 복사</button>
+        </div>
       </aside>
     </main>
+
+    <template id="receiverTemplate">
+      <section class="receiver-card">
+        <div class="receiver-card-header">
+          <strong class="receiver-title">받는 사람</strong>
+          <button class="remove-button" type="button" data-action="remove-receiver">삭제</button>
+        </div>
+        <div class="field-grid two-columns">
+          <label class="field">
+            <span>이름 <strong aria-label="필수">*</strong></span>
+            <input data-field="name" type="text" autocomplete="name" required>
+          </label>
+          <label class="field">
+            <span>전화번호 <strong aria-label="필수">*</strong></span>
+            <input data-field="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" required>
+          </label>
+          <div class="field full-width">
+            <span>주소 <strong aria-label="필수">*</strong></span>
+            <div class="address-row">
+              <input data-field="postcode" type="text" placeholder="우편번호" readonly aria-label="우편번호">
+              <button class="secondary-button" type="button" data-action="search-address">주소 검색</button>
+            </div>
+            <input data-field="baseAddress" type="text" placeholder="주소 검색 버튼을 눌러 선택해 주세요" readonly required>
+            <input data-field="detailAddress" type="text" autocomplete="street-address" placeholder="상세주소 예: 101동 1001호">
+          </div>
+        </div>
+      </section>
+    </template>
 
     <div id="addressModal" class="address-modal" hidden>
       <div class="address-modal-header">

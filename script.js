@@ -1,40 +1,54 @@
 (function () {
   "use strict";
 
+  var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
+
   var fields = {
     senderName: document.getElementById("senderName"),
     senderPhone: document.getElementById("senderPhone"),
-    receiverName: document.getElementById("receiverName"),
-    receiverPhone: document.getElementById("receiverPhone"),
-    receiverPostcode: document.getElementById("receiverPostcode"),
-    receiverBaseAddress: document.getElementById("receiverBaseAddress"),
-    receiverDetailAddress: document.getElementById("receiverDetailAddress"),
     variety: document.getElementById("variety"),
     boxSize: document.getElementById("boxSize"),
     boxCount: document.getElementById("boxCount")
   };
 
-  var requiredFieldLabels = {
-    receiverName: "받는 사람 이름",
-    receiverPhone: "받는 사람 전화번호",
-    receiverBaseAddress: "받는 사람 주소",
+  var productFieldLabels = {
     variety: "품종",
     boxSize: "규격",
     boxCount: "박스 수"
   };
 
   var orderForm = document.getElementById("orderForm");
+  var receiverList = document.getElementById("receiverList");
+  var receiverTemplate = document.getElementById("receiverTemplate");
+  var addReceiverButton = document.getElementById("addReceiverButton");
   var orderText = document.getElementById("orderText");
   var copyButton = document.getElementById("copyButton");
+  var copyAccountButton = document.getElementById("copyAccountButton");
+  var bankAccountText = document.getElementById("bankAccountText");
   var alertBox = document.getElementById("alertBox");
-  var addressSearchButton = document.getElementById("addressSearchButton");
   var addressModal = document.getElementById("addressModal");
   var addressSearchContainer = document.getElementById("addressSearchContainer");
   var closeAddressSearch = document.getElementById("closeAddressSearch");
   var postcodeScriptPromise = null;
+  var nextReceiverId = 1;
+  var activeAddressCard = null;
+
+  bankAccountText.textContent = BANK_ACCOUNT;
 
   function valueOf(fieldName) {
     return fields[fieldName].value.trim();
+  }
+
+  function valueOfInput(container, fieldName) {
+    return getReceiverInput(container, fieldName).value.trim();
+  }
+
+  function getReceiverInput(container, fieldName) {
+    return container.querySelector('[data-field="' + fieldName + '"]');
+  }
+
+  function getReceiverCards() {
+    return Array.prototype.slice.call(receiverList.querySelectorAll(".receiver-card"));
   }
 
   function normalizeBoxCount(value) {
@@ -47,14 +61,66 @@
     return String(Math.floor(numberValue));
   }
 
-  function formatReceiverAddress(data) {
+  function dispatchFieldChange(input) {
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function setReceiverInputValue(container, fieldName, value) {
+    var input = getReceiverInput(container, fieldName);
+    input.value = value || "";
+    dispatchFieldChange(input);
+  }
+
+  function createReceiverCard() {
+    var card = receiverTemplate.content.firstElementChild.cloneNode(true);
+    var receiverId = String(nextReceiverId);
+    nextReceiverId += 1;
+
+    card.dataset.receiverId = receiverId;
+    receiverList.appendChild(card);
+    renumberReceivers();
+    refreshOrderText();
+  }
+
+  function renumberReceivers() {
+    var cards = getReceiverCards();
+
+    cards.forEach(function (card, index) {
+      card.querySelector(".receiver-title").textContent = "받는 사람 " + (index + 1);
+      card.querySelector('[data-action="remove-receiver"]').hidden = cards.length === 1;
+    });
+  }
+
+  function removeReceiver(card) {
+    if (getReceiverCards().length <= 1) {
+      return;
+    }
+
+    card.remove();
+    renumberReceivers();
+    refreshOrderText();
+  }
+
+  function formatReceiverAddress(receiver) {
     var parts = [
-      data.receiverPostcode ? "(" + data.receiverPostcode + ")" : "",
-      data.receiverBaseAddress,
-      data.receiverDetailAddress
+      receiver.postcode ? "(" + receiver.postcode + ")" : "",
+      receiver.baseAddress,
+      receiver.detailAddress
     ];
 
     return parts.filter(Boolean).join(" ");
+  }
+
+  function getReceiverData(card) {
+    return {
+      id: card.dataset.receiverId,
+      name: valueOfInput(card, "name"),
+      phone: valueOfInput(card, "phone"),
+      postcode: valueOfInput(card, "postcode"),
+      baseAddress: valueOfInput(card, "baseAddress"),
+      detailAddress: valueOfInput(card, "detailAddress")
+    };
   }
 
   function getOrderData() {
@@ -63,11 +129,7 @@
     return {
       senderName: valueOf("senderName"),
       senderPhone: valueOf("senderPhone"),
-      receiverName: valueOf("receiverName"),
-      receiverPhone: valueOf("receiverPhone"),
-      receiverPostcode: valueOf("receiverPostcode"),
-      receiverBaseAddress: valueOf("receiverBaseAddress"),
-      receiverDetailAddress: valueOf("receiverDetailAddress"),
+      receivers: getReceiverCards().map(getReceiverData),
       variety: valueOf("variety"),
       boxSize: valueOf("boxSize"),
       boxCount: boxCount
@@ -85,14 +147,27 @@
     return parts.length > 0 ? parts.join(" / ") : fallback;
   }
 
+  function buildReceiverLines(receivers) {
+    var hasManyReceivers = receivers.length > 1;
+    var lines = [];
+
+    receivers.forEach(function (receiver, index) {
+      var suffix = hasManyReceivers ? " " + (index + 1) : "";
+      lines.push("받는사람" + suffix + ": " + buildContactLine(receiver.name, receiver.phone, ""));
+      lines.push("주소" + suffix + ": " + formatReceiverAddress(receiver));
+    });
+
+    return lines;
+  }
+
   function buildOrderText(data) {
-    return [
+    var lines = [
       "🍑 복숭아 주문",
       "보내는사람: " + buildContactLine(data.senderName, data.senderPhone, "농장주 이름으로 배송"),
-      "받는사람: " + buildContactLine(data.receiverName, data.receiverPhone, ""),
-      "주소: " + formatReceiverAddress(data),
       "상품: " + buildQuantityLine(data)
-    ].join("\n");
+    ];
+
+    return lines.concat(buildReceiverLines(data.receivers)).join("\n");
   }
 
   function showAlert(message, type) {
@@ -105,6 +180,10 @@
     Object.keys(fields).forEach(function (fieldName) {
       fields[fieldName].classList.remove("is-invalid");
     });
+
+    receiverList.querySelectorAll(".is-invalid").forEach(function (input) {
+      input.classList.remove("is-invalid");
+    });
   }
 
   function validateOrder() {
@@ -113,12 +192,32 @@
 
     clearInvalidState();
 
-    Object.keys(requiredFieldLabels).forEach(function (fieldName) {
+    Object.keys(productFieldLabels).forEach(function (fieldName) {
       var value = fieldName === "boxCount" ? data.boxCount : data[fieldName];
 
       if (!value) {
-        missing.push(requiredFieldLabels[fieldName]);
+        missing.push(productFieldLabels[fieldName]);
         fields[fieldName].classList.add("is-invalid");
+      }
+    });
+
+    getReceiverCards().forEach(function (card, index) {
+      var receiverNumber = "받는 사람 " + (index + 1);
+      var receiver = getReceiverData(card);
+
+      if (!receiver.name) {
+        missing.push(receiverNumber + " 이름");
+        getReceiverInput(card, "name").classList.add("is-invalid");
+      }
+
+      if (!receiver.phone) {
+        missing.push(receiverNumber + " 전화번호");
+        getReceiverInput(card, "phone").classList.add("is-invalid");
+      }
+
+      if (!receiver.baseAddress) {
+        missing.push(receiverNumber + " 주소");
+        getReceiverInput(card, "baseAddress").classList.add("is-invalid");
       }
     });
 
@@ -134,6 +233,7 @@
   function hideAddressSearch() {
     addressModal.hidden = true;
     addressSearchContainer.innerHTML = "";
+    activeAddressCard = null;
   }
 
   function loadPostcodeScript() {
@@ -157,8 +257,8 @@
     return postcodeScriptPromise;
   }
 
-  function handleAddressComplete(addressData) {
-    var address = addressData.roadAddress || addressData.jibunAddress || "";
+  function getSelectedAddress(addressData) {
+    var address = addressData.roadAddress || addressData.jibunAddress || addressData.autoRoadAddress || addressData.autoJibunAddress || "";
     var extraAddress = [];
 
     if (addressData.bname && /(동|로|가)$/.test(addressData.bname)) {
@@ -173,15 +273,30 @@
       address += " (" + extraAddress.join(", ") + ")";
     }
 
-    fields.receiverPostcode.value = addressData.zonecode || "";
-    fields.receiverBaseAddress.value = address;
-    fields.receiverBaseAddress.classList.remove("is-invalid");
-    hideAddressSearch();
-    fields.receiverDetailAddress.focus();
-    refreshOrderText();
+    return address;
   }
 
-  function openAddressSearch() {
+  function handleAddressComplete(addressData) {
+    var card = activeAddressCard;
+
+    if (!card || !receiverList.contains(card)) {
+      hideAddressSearch();
+      return;
+    }
+
+    setReceiverInputValue(card, "postcode", addressData.zonecode || "");
+    setReceiverInputValue(card, "baseAddress", getSelectedAddress(addressData));
+    getReceiverInput(card, "baseAddress").classList.remove("is-invalid");
+    refreshOrderText();
+    getReceiverInput(card, "detailAddress").focus();
+    showAlert("주소를 입력했습니다. 상세주소를 확인해 주세요.", "success");
+    addressModal.hidden = true;
+    addressSearchContainer.innerHTML = "";
+    activeAddressCard = null;
+  }
+
+  function openAddressSearch(card) {
+    activeAddressCard = card;
     showAlert("주소 검색창을 여는 중입니다.", "success");
 
     loadPostcodeScript()
@@ -207,11 +322,35 @@
     orderText.value = buildOrderText(data);
   }
 
-  function fallbackCopy(text) {
-    orderText.focus();
-    orderText.select();
-    orderText.setSelectionRange(0, text.length);
+  function fallbackCopyFromElement(text, element) {
+    element.focus();
+    element.select();
+    element.setSelectionRange(0, text.length);
     return document.execCommand("copy");
+  }
+
+  function fallbackCopyText(text) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    var copied = fallbackCopyFromElement(text, textarea);
+    document.body.removeChild(textarea);
+    return copied;
+  }
+
+  function writeToClipboard(text, fallbackElement) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () {
+        return true;
+      }).catch(function () {
+        return fallbackElement ? fallbackCopyFromElement(text, fallbackElement) : fallbackCopyText(text);
+      });
+    }
+
+    return Promise.resolve(fallbackElement ? fallbackCopyFromElement(text, fallbackElement) : fallbackCopyText(text));
   }
 
   function copyOrderText() {
@@ -221,35 +360,48 @@
       return;
     }
 
-    var text = orderText.value;
+    writeToClipboard(orderText.value, orderText).then(function (copied) {
+      if (copied) {
+        showAlert("주문 문구를 복사했습니다. 카카오톡에 붙여넣어 주세요.", "success");
+      } else {
+        showAlert("복사가 되지 않으면 주문 문구를 길게 눌러 직접 선택해 주세요.", "error");
+      }
+    });
+  }
 
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text)
-        .then(function () {
-          showAlert("주문 문구를 복사했습니다. 카카오톡에 붙여넣어 주세요.", "success");
-        })
-        .catch(function () {
-          if (fallbackCopy(text)) {
-            showAlert("주문 문구를 복사했습니다. 카카오톡에 붙여넣어 주세요.", "success");
-          } else {
-            showAlert("복사가 되지 않으면 주문 문구를 길게 눌러 직접 선택해 주세요.", "error");
-          }
-        });
-      return;
-    }
-
-    if (fallbackCopy(text)) {
-      showAlert("주문 문구를 복사했습니다. 카카오톡에 붙여넣어 주세요.", "success");
-    } else {
-      showAlert("복사가 되지 않으면 주문 문구를 길게 눌러 직접 선택해 주세요.", "error");
-    }
+  function copyBankAccount() {
+    writeToClipboard(BANK_ACCOUNT).then(function (copied) {
+      if (copied) {
+        showAlert("계좌번호를 복사했습니다.", "success");
+      } else {
+        showAlert("계좌 복사가 되지 않으면 계좌번호를 직접 선택해 주세요.", "error");
+      }
+    });
   }
 
   orderForm.addEventListener("input", refreshOrderText);
   orderForm.addEventListener("change", refreshOrderText);
+  receiverList.addEventListener("click", function (event) {
+    var actionButton = event.target.closest("[data-action]");
+
+    if (!actionButton) {
+      return;
+    }
+
+    var card = event.target.closest(".receiver-card");
+
+    if (actionButton.dataset.action === "search-address") {
+      openAddressSearch(card);
+    }
+
+    if (actionButton.dataset.action === "remove-receiver") {
+      removeReceiver(card);
+    }
+  });
+  addReceiverButton.addEventListener("click", createReceiverCard);
   copyButton.addEventListener("click", copyOrderText);
-  addressSearchButton.addEventListener("click", openAddressSearch);
+  copyAccountButton.addEventListener("click", copyBankAccount);
   closeAddressSearch.addEventListener("click", hideAddressSearch);
 
-  refreshOrderText();
+  createReceiverCard();
 }());
