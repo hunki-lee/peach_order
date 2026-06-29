@@ -2,6 +2,7 @@
   "use strict";
 
   var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
+  var SALES_NOTICE = "대극천";
 
   var fields = {
     senderName: document.getElementById("senderName"),
@@ -25,6 +26,7 @@
   var copyButton = document.getElementById("copyButton");
   var copyAccountButton = document.getElementById("copyAccountButton");
   var bankAccountText = document.getElementById("bankAccountText");
+  var salesNoticeText = document.getElementById("salesNoticeText");
   var alertBox = document.getElementById("alertBox");
   var addressModal = document.getElementById("addressModal");
   var addressSearchContainer = document.getElementById("addressSearchContainer");
@@ -34,6 +36,7 @@
   var activeAddressCard = null;
 
   bankAccountText.textContent = BANK_ACCOUNT;
+  salesNoticeText.textContent = SALES_NOTICE;
 
   function valueOf(fieldName) {
     return fields[fieldName].value.trim();

@@ -252,6 +252,32 @@ button:focus-visible {
   color: #7d2718;
 }
 
+.sales-notice {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #ecd9c2;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.sales-notice-label,
+.sales-notice-text {
+  margin: 0;
+}
+
+.sales-notice-label {
+  color: var(--green);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.sales-notice-text {
+  margin-top: 4px;
+  color: var(--text);
+  font-weight: 900;
+  white-space: pre-wrap;
+}
+
 .result-header {
   display: flex;
   gap: 12px;
