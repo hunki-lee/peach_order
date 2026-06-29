@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fff7ed">
+    <title>복숭아 주문서</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="form-panel" aria-labelledby="page-title">
+        <header class="page-header">
+          <p class="eyebrow">복숭아 주문</p>
+          <h1 id="page-title">주문 정보를 입력해 주세요</h1>
+          <p class="privacy-note">입력한 내용은 저장되지 않고, 이 기기 안에서만 주문 문구로 바뀝니다.</p>
+        </header>
+
+        <form id="orderForm" novalidate>
+          <fieldset>
+            <legend>보내는 사람</legend>
+            <div class="field-grid two-columns">
+              <label class="field">
+                <span>이름</span>
+                <input id="senderName" name="senderName" type="text" autocomplete="name" placeholder="미입력 시 농장주 이름">
+              </label>
+              <label class="field">
+                <span>전화번호</span>
+                <input id="senderPhone" name="senderPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000">
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>받는 사람</legend>
+            <div class="field-grid two-columns">
+              <label class="field">
+                <span>이름 <strong aria-label="필수">*</strong></span>
+                <input id="receiverName" name="receiverName" type="text" autocomplete="name" required>
+              </label>
+              <label class="field">
+                <span>전화번호 <strong aria-label="필수">*</strong></span>
+                <input id="receiverPhone" name="receiverPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" required>
+              </label>
+              <div class="field full-width">
+                <span>주소 <strong aria-label="필수">*</strong></span>
+                <div class="address-row">
+                  <input id="receiverPostcode" name="receiverPostcode" type="text" placeholder="우편번호" readonly aria-label="우편번호">
+                  <button id="addressSearchButton" class="secondary-button" type="button">주소 검색</button>
+                </div>
+                <input id="receiverBaseAddress" name="receiverBaseAddress" type="text" placeholder="주소 검색 버튼을 눌러 선택해 주세요" readonly required>
+                <input id="receiverDetailAddress" name="receiverDetailAddress" type="text" autocomplete="street-address" placeholder="상세주소 예: 101동 1001호">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>상품</legend>
+            <div class="field-grid three-columns">
+              <label class="field">
+                <span>품종 <strong aria-label="필수">*</strong></span>
+                <select id="variety" name="variety" required>
+                  <option value="">선택</option>
+                  <option value="천중도">천중도</option>
+                  <option value="황도">황도</option>
+                  <option value="백도">백도</option>
+                  <option value="대월">대월</option>
+                  <option value="유명">유명</option>
+                  <option value="기타">기타</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>규격 <strong aria-label="필수">*</strong></span>
+                <input id="boxSize" name="boxSize" type="text" placeholder="예: 11-12과" required>
+              </label>
+              <label class="field">
+                <span>박스 수 <strong aria-label="필수">*</strong></span>
+                <input id="boxCount" name="boxCount" type="number" inputmode="numeric" min="1" step="1" placeholder="1" required>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>입금</legend>
+            <div class="field-grid two-columns">
+              <label class="field">
+                <span>입금자명 <strong aria-label="필수">*</strong></span>
+                <input id="payerName" name="payerName" type="text" required>
+              </label>
+              <label class="field">
+                <span>금액</span>
+                <input id="amount" name="amount" type="text" inputmode="numeric" placeholder="예: 50,000원">
+              </label>
+              <label class="field full-width">
+                <span>입금계좌 <strong aria-label="필수">*</strong></span>
+                <input id="bankAccount" name="bankAccount" type="text" value="농협 623083-56-013585 박민자" required>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>메모</legend>
+            <label class="field">
+              <span>메모</span>
+              <textarea id="memo" name="memo" rows="3" placeholder="배송 요청사항 등"></textarea>
+            </label>
+          </fieldset>
+        </form>
+      </section>
+
+      <aside class="result-panel" aria-labelledby="result-title">
+        <div class="result-header">
+          <div>
+            <p class="eyebrow">카카오톡 붙여넣기</p>
+            <h2 id="result-title">생성된 주문 문구</h2>
+          </div>
+          <button id="copyButton" class="primary-button" type="button">복사하기</button>
+        </div>
+
+        <div id="alertBox" class="alert-box" role="status" aria-live="polite" hidden></div>
+        <textarea id="orderText" class="order-text" readonly aria-label="생성된 주문 문구"></textarea>
+      </aside>
+    </main>
+
+    <div id="addressModal" class="address-modal" hidden>
+      <div class="address-modal-header">
+        <strong>주소 검색</strong>
+        <button id="closeAddressSearch" class="close-button" type="button" aria-label="주소 검색 닫기">닫기</button>
+      </div>
+      <div id="addressSearchContainer" class="address-search-container"></div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
