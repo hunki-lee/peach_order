@@ -33,38 +33,12 @@
 
           <fieldset>
             <legend>받는 사람</legend>
-            <div id="receiverList" class="receiver-list"></div>
-            <button id="addReceiverButton" class="add-button" type="button">+ 받는 사람 추가</button>
-          </fieldset>
-
-          <fieldset>
-            <legend>상품</legend>
-            <div class="field-grid three-columns">
-              <label class="field">
-                <span>품종 <strong aria-label="필수">*</strong></span>
-                <select id="variety" name="variety" required>
-                  <option value="">선택</option>
-                  <option value="대극천">대극천</option>
-                  <option value="직접입력">직접입력</option>
-                </select>
-              </label>
-              <label id="customVarietyField" class="field" hidden>
-                <span>품종 직접입력 <strong aria-label="필수">*</strong></span>
-                <input id="customVariety" name="customVariety" type="text" placeholder="예: 천중도">
-              </label>
-              <label class="field">
-                <span>규격/단가 <strong aria-label="필수">*</strong></span>
-                <input id="boxSize" name="boxSize" type="text" placeholder="예: 11-12과 또는 3만" required>
-              </label>
-              <label class="field">
-                <span>박스 수 <strong aria-label="필수">*</strong></span>
-                <input id="boxCount" name="boxCount" type="number" inputmode="numeric" min="1" step="1" value="1" required>
-              </label>
-            </div>
             <div class="sales-notice" aria-label="현재 판매 안내(택배비 포함)">
               <p class="sales-notice-label">현재 판매 안내(택배비 포함)</p>
               <p id="salesNoticeText" class="sales-notice-text"></p>
             </div>
+            <div id="receiverList" class="receiver-list"></div>
+            <button id="addReceiverButton" class="add-button" type="button">+ 받는 사람 추가</button>
           </fieldset>
         </form>
       </section>
@@ -113,6 +87,31 @@
             </div>
             <input data-field="baseAddress" type="text" placeholder="주소 검색 버튼을 눌러 선택해 주세요" readonly required>
             <input data-field="detailAddress" type="text" autocomplete="street-address" placeholder="상세주소 예: 101동 1001호">
+          </div>
+        </div>
+        <div class="receiver-product">
+          <strong class="receiver-product-title">상품</strong>
+          <div class="field-grid three-columns">
+            <label class="field">
+              <span>품종 <strong aria-label="필수">*</strong></span>
+              <select data-field="variety" required>
+                <option value="">선택</option>
+                <option value="대극천">대극천</option>
+                <option value="직접입력">직접입력</option>
+              </select>
+            </label>
+            <label class="field" data-field-wrap="customVariety" hidden>
+              <span>품종 직접입력 <strong aria-label="필수">*</strong></span>
+              <input data-field="customVariety" type="text" placeholder="예: 천중도">
+            </label>
+            <label class="field">
+              <span>규격/단가 <strong aria-label="필수">*</strong></span>
+              <input data-field="boxSize" type="text" placeholder="예: 11-12과 또는 3만" required>
+            </label>
+            <label class="field">
+              <span>박스 수 <strong aria-label="필수">*</strong></span>
+              <input data-field="boxCount" type="number" inputmode="numeric" min="1" step="1" value="1" required>
+            </label>
           </div>
         </div>
       </section>

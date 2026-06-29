@@ -2,15 +2,11 @@
   "use strict";
 
   var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
-  var SALES_NOTICE = "대극천 2kg 3.2만, 2.7만, 2만, 4kg 5만.\n택배비 포함";
+  var SALES_NOTICE = "대극천 2kg 3.2만, 2.7만, 2만, 4kg 5만.";
 
   var fields = {
     senderName: document.getElementById("senderName"),
-    senderPhone: document.getElementById("senderPhone"),
-    variety: document.getElementById("variety"),
-    customVariety: document.getElementById("customVariety"),
-    boxSize: document.getElementById("boxSize"),
-    boxCount: document.getElementById("boxCount")
+    senderPhone: document.getElementById("senderPhone")
   };
 
   var productFieldLabels = {
@@ -20,7 +16,6 @@
   };
 
   var orderForm = document.getElementById("orderForm");
-  var customVarietyField = document.getElementById("customVarietyField");
   var receiverList = document.getElementById("receiverList");
   var receiverTemplate = document.getElementById("receiverTemplate");
   var addReceiverButton = document.getElementById("addReceiverButton");
@@ -42,14 +37,6 @@
 
   function valueOf(fieldName) {
     return fields[fieldName].value.trim();
-  }
-
-  function getSelectedVariety() {
-    if (valueOf("variety") === "직접입력") {
-      return valueOf("customVariety");
-    }
-
-    return valueOf("variety");
   }
 
   function valueOfInput(container, fieldName) {
@@ -74,6 +61,14 @@
     return String(Math.floor(numberValue));
   }
 
+  function getSelectedVariety(card) {
+    if (valueOfInput(card, "variety") === "직접입력") {
+      return valueOfInput(card, "customVariety");
+    }
+
+    return valueOfInput(card, "variety");
+  }
+
   function dispatchFieldChange(input) {
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
@@ -92,6 +87,7 @@
 
     card.dataset.receiverId = receiverId;
     receiverList.appendChild(card);
+    updateCustomVarietyVisibility(card);
     renumberReceivers();
     refreshOrderText();
   }
@@ -132,20 +128,18 @@
       phone: valueOfInput(card, "phone"),
       postcode: valueOfInput(card, "postcode"),
       baseAddress: valueOfInput(card, "baseAddress"),
-      detailAddress: valueOfInput(card, "detailAddress")
+      detailAddress: valueOfInput(card, "detailAddress"),
+      variety: getSelectedVariety(card),
+      boxSize: valueOfInput(card, "boxSize"),
+      boxCount: normalizeBoxCount(valueOfInput(card, "boxCount"))
     };
   }
 
   function getOrderData() {
-    var boxCount = normalizeBoxCount(valueOf("boxCount"));
-
     return {
       senderName: valueOf("senderName"),
       senderPhone: valueOf("senderPhone"),
-      receivers: getReceiverCards().map(getReceiverData),
-      variety: getSelectedVariety(),
-      boxSize: valueOf("boxSize"),
-      boxCount: boxCount
+      receivers: getReceiverCards().map(getReceiverData)
     };
   }
 
@@ -160,7 +154,7 @@
     return parts.length > 0 ? parts.join(" / ") : fallback;
   }
 
-  function buildReceiverLines(receivers, quantityLine) {
+  function buildReceiverLines(receivers) {
     var hasManyReceivers = receivers.length > 1;
     var lines = [];
 
@@ -173,21 +167,20 @@
 
       lines.push(receiverLabel + ": " + buildContactLine(receiver.name, receiver.phone, ""));
       lines.push("주소: " + formatReceiverAddress(receiver));
-      lines.push("상품: " + quantityLine);
+      lines.push("상품: " + buildQuantityLine(receiver));
     });
 
     return lines;
   }
 
   function buildOrderText(data) {
-    var quantityLine = buildQuantityLine(data);
     var lines = [
       "🍑 그린농원 복숭아 주문",
       "보내는사람: " + buildContactLine(data.senderName || "그린농원", data.senderPhone, "그린농원"),
       ""
     ];
 
-    return lines.concat(buildReceiverLines(data.receivers, quantityLine)).join("\n");
+    return lines.concat(buildReceiverLines(data.receivers)).join("\n");
   }
 
   function showAlert(message, type) {
@@ -208,22 +201,8 @@
 
   function validateOrder() {
     var missing = [];
-    var data = getOrderData();
 
     clearInvalidState();
-
-    Object.keys(productFieldLabels).forEach(function (fieldName) {
-      var value = fieldName === "boxCount" ? data.boxCount : data[fieldName];
-
-      if (!value) {
-        missing.push(productFieldLabels[fieldName]);
-        if (fieldName === "variety" && valueOf("variety") === "직접입력") {
-          fields.customVariety.classList.add("is-invalid");
-        } else {
-          fields[fieldName].classList.add("is-invalid");
-        }
-      }
-    });
 
     getReceiverCards().forEach(function (card, index) {
       var receiverNumber = "받는 사람 " + (index + 1);
@@ -243,6 +222,19 @@
         missing.push(receiverNumber + " 주소");
         getReceiverInput(card, "baseAddress").classList.add("is-invalid");
       }
+
+      Object.keys(productFieldLabels).forEach(function (fieldName) {
+        var value = receiver[fieldName];
+
+        if (!value) {
+          missing.push(receiverNumber + " " + productFieldLabels[fieldName]);
+          if (fieldName === "variety" && valueOfInput(card, "variety") === "직접입력") {
+            getReceiverInput(card, "customVariety").classList.add("is-invalid");
+          } else {
+            getReceiverInput(card, fieldName).classList.add("is-invalid");
+          }
+        }
+      });
     });
 
     if (missing.length > 0) {
@@ -254,13 +246,16 @@
     return true;
   }
 
-  function updateCustomVarietyVisibility() {
-    var shouldShow = valueOf("variety") === "직접입력";
+  function updateCustomVarietyVisibility(card) {
+    var customVarietyField = card.querySelector('[data-field-wrap="customVariety"]');
+    var customVarietyInput = getReceiverInput(card, "customVariety");
+    var shouldShow = valueOfInput(card, "variety") === "직접입력";
+
     customVarietyField.hidden = !shouldShow;
 
     if (!shouldShow) {
-      fields.customVariety.value = "";
-      fields.customVariety.classList.remove("is-invalid");
+      customVarietyInput.value = "";
+      customVarietyInput.classList.remove("is-invalid");
     }
   }
 
@@ -414,8 +409,13 @@
   }
 
   orderForm.addEventListener("input", refreshOrderText);
-  orderForm.addEventListener("change", function () {
-    updateCustomVarietyVisibility();
+  orderForm.addEventListener("change", function (event) {
+    var card = event.target.closest(".receiver-card");
+
+    if (card) {
+      updateCustomVarietyVisibility(card);
+    }
+
     refreshOrderText();
   });
   receiverList.addEventListener("click", function (event) {
@@ -440,6 +440,5 @@
   copyAccountButton.addEventListener("click", copyBankAccount);
   closeAddressSearch.addEventListener("click", hideAddressSearch);
 
-  updateCustomVarietyVisibility();
   createReceiverCard();
 }());

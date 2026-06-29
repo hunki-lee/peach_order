@@ -257,7 +257,7 @@ button:focus-visible {
 }
 
 .sales-notice {
-  margin-top: 12px;
+  margin: 0 0 12px;
   padding: 12px;
   border: 1px solid #ecd9c2;
   border-radius: 8px;
@@ -280,6 +280,18 @@ button:focus-visible {
   color: var(--text);
   font-weight: 900;
   white-space: pre-wrap;
+}
+
+.receiver-product {
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.receiver-product-title {
+  color: var(--green);
+  font-size: 0.96rem;
 }
 
 .result-header {
