@@ -33,10 +33,6 @@
 
           <fieldset>
             <legend>받는 사람</legend>
-            <div class="sales-notice" aria-label="현재 판매 안내(택배비 포함)">
-              <p class="sales-notice-label">현재 판매 안내(택배비 포함)</p>
-              <p id="salesNoticeText" class="sales-notice-text"></p>
-            </div>
             <div id="receiverList" class="receiver-list"></div>
             <button id="addReceiverButton" class="add-button" type="button">+ 받는 사람 추가</button>
           </fieldset>
@@ -112,6 +108,10 @@
               <span>박스 수 <strong aria-label="필수">*</strong></span>
               <input data-field="boxCount" type="number" inputmode="numeric" min="1" step="1" value="1" required>
             </label>
+          </div>
+          <div class="sales-notice" aria-label="현재 판매 안내(택배비 포함)">
+            <p class="sales-notice-label">현재 판매 안내(택배비 포함)</p>
+            <p class="sales-notice-text" data-field="salesNotice"></p>
           </div>
         </div>
       </section>

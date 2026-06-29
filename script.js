@@ -23,7 +23,6 @@
   var copyButton = document.getElementById("copyButton");
   var copyAccountButton = document.getElementById("copyAccountButton");
   var bankAccountText = document.getElementById("bankAccountText");
-  var salesNoticeText = document.getElementById("salesNoticeText");
   var alertBox = document.getElementById("alertBox");
   var addressModal = document.getElementById("addressModal");
   var addressSearchContainer = document.getElementById("addressSearchContainer");
@@ -33,7 +32,6 @@
   var activeAddressCard = null;
 
   bankAccountText.textContent = BANK_ACCOUNT;
-  salesNoticeText.textContent = SALES_NOTICE;
 
   function valueOf(fieldName) {
     return fields[fieldName].value.trim();
@@ -86,6 +84,7 @@
     nextReceiverId += 1;
 
     card.dataset.receiverId = receiverId;
+    getReceiverInput(card, "salesNotice").textContent = SALES_NOTICE;
     receiverList.appendChild(card);
     updateCustomVarietyVisibility(card);
     renumberReceivers();

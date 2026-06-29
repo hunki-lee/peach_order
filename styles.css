@@ -282,6 +282,10 @@ button:focus-visible {
   white-space: pre-wrap;
 }
 
+.receiver-product .sales-notice {
+  margin: 0;
+}
+
 .receiver-product {
   display: grid;
   gap: 10px;
