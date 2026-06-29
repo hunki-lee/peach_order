@@ -165,10 +165,15 @@
     var lines = [];
 
     receivers.forEach(function (receiver, index) {
-      var suffix = hasManyReceivers ? " " + (index + 1) : "";
-      lines.push("받는사람" + suffix + ": " + buildContactLine(receiver.name, receiver.phone, ""));
-      lines.push("주소" + suffix + ": " + formatReceiverAddress(receiver));
-      lines.push("상품" + suffix + ": " + quantityLine);
+      var receiverLabel = hasManyReceivers ? "받는사람" + (index + 1) : "받는사람";
+
+      if (index > 0) {
+        lines.push("");
+      }
+
+      lines.push(receiverLabel + ": " + buildContactLine(receiver.name, receiver.phone, ""));
+      lines.push("주소: " + formatReceiverAddress(receiver));
+      lines.push("상품: " + quantityLine);
     });
 
     return lines;
