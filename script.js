@@ -406,24 +406,46 @@
     return copied;
   }
 
+  function timeoutClipboardWrite() {
+    return new Promise(function (resolve) {
+      window.setTimeout(function () {
+        resolve(false);
+      }, 700);
+    });
+  }
+
   function writeToClipboard(text, fallbackElement) {
+    if (copyWithFallback(text, fallbackElement)) {
+      return Promise.resolve(true);
+    }
+
     if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text).then(function () {
-        return true;
-      }).catch(function () {
-        return copyWithFallback(text, fallbackElement);
+      return Promise.race([
+        navigator.clipboard.writeText(text).then(function () {
+          return true;
+        }).catch(function () {
+          return false;
+        }),
+        timeoutClipboardWrite()
+      ]).then(function (copied) {
+        if (!copied && fallbackElement) {
+          selectTextInElement(text, fallbackElement);
+        }
+
+        return copied;
       });
     }
 
-    return Promise.resolve(copyWithFallback(text, fallbackElement));
+    if (fallbackElement) {
+      selectTextInElement(text, fallbackElement);
+    }
+
+    return Promise.resolve(false);
   }
 
   function copyOrderText() {
     refreshOrderText();
-
-    if (!validateOrder()) {
-      return;
-    }
+    clearInvalidState();
 
     writeToClipboard(orderText.value, orderText).then(function (copied) {
       if (copied) {
