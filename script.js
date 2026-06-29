@@ -350,22 +350,59 @@
     orderText.value = buildOrderText(data);
   }
 
-  function fallbackCopyFromElement(text, element) {
+  function selectTextInElement(text, element) {
+    if (!element) {
+      return;
+    }
+
     element.focus();
     element.select();
     element.setSelectionRange(0, text.length);
+  }
+
+  function fallbackCopyFromElement(text, element) {
+    selectTextInElement(text, element);
     return document.execCommand("copy");
   }
 
   function fallbackCopyText(text) {
     var textarea = document.createElement("textarea");
     textarea.value = text;
-    textarea.setAttribute("readonly", "");
     textarea.style.position = "fixed";
-    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    textarea.style.left = "0";
+    textarea.style.width = "1px";
+    textarea.style.height = "1px";
+    textarea.style.padding = "0";
+    textarea.style.border = "0";
+    textarea.style.opacity = "0.01";
+    textarea.style.fontSize = "16px";
     document.body.appendChild(textarea);
-    var copied = fallbackCopyFromElement(text, textarea);
-    document.body.removeChild(textarea);
+
+    var copied = false;
+
+    try {
+      copied = fallbackCopyFromElement(text, textarea);
+    } finally {
+      document.body.removeChild(textarea);
+    }
+
+    return copied;
+  }
+
+  function copyWithFallback(text, fallbackElement) {
+    var copied = false;
+
+    try {
+      copied = fallbackCopyText(text);
+    } catch (error) {
+      copied = false;
+    }
+
+    if (!copied && fallbackElement) {
+      selectTextInElement(text, fallbackElement);
+    }
+
     return copied;
   }
 
@@ -374,11 +411,11 @@
       return navigator.clipboard.writeText(text).then(function () {
         return true;
       }).catch(function () {
-        return fallbackElement ? fallbackCopyFromElement(text, fallbackElement) : fallbackCopyText(text);
+        return copyWithFallback(text, fallbackElement);
       });
     }
 
-    return Promise.resolve(fallbackElement ? fallbackCopyFromElement(text, fallbackElement) : fallbackCopyText(text));
+    return Promise.resolve(copyWithFallback(text, fallbackElement));
   }
 
   function copyOrderText() {
@@ -392,8 +429,11 @@
       if (copied) {
         showAlert("주문 문구를 복사했습니다. 카카오톡에 붙여넣어 주세요.", "success");
       } else {
-        showAlert("복사가 되지 않으면 주문 문구를 길게 눌러 직접 선택해 주세요.", "error");
+        showAlert("자동 복사가 막혔습니다. 선택된 주문 문구를 직접 복사해 주세요.", "error");
       }
+    }).catch(function () {
+      selectTextInElement(orderText.value, orderText);
+      showAlert("자동 복사가 막혔습니다. 선택된 주문 문구를 직접 복사해 주세요.", "error");
     });
   }
 
@@ -404,6 +444,8 @@
       } else {
         showAlert("계좌 복사가 되지 않으면 계좌번호를 직접 선택해 주세요.", "error");
       }
+    }).catch(function () {
+      showAlert("계좌 복사가 되지 않으면 계좌번호를 직접 선택해 주세요.", "error");
     });
   }
 
