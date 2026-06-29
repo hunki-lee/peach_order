@@ -2,12 +2,13 @@
   "use strict";
 
   var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
-  var SALES_NOTICE = "대극천";
+  var SALES_NOTICE = "대극천 2kg 3.2만, 2.7만, 2만, 4kg 5만.\n택배비 포함";
 
   var fields = {
     senderName: document.getElementById("senderName"),
     senderPhone: document.getElementById("senderPhone"),
     variety: document.getElementById("variety"),
+    customVariety: document.getElementById("customVariety"),
     boxSize: document.getElementById("boxSize"),
     boxCount: document.getElementById("boxCount")
   };
@@ -19,6 +20,7 @@
   };
 
   var orderForm = document.getElementById("orderForm");
+  var customVarietyField = document.getElementById("customVarietyField");
   var receiverList = document.getElementById("receiverList");
   var receiverTemplate = document.getElementById("receiverTemplate");
   var addReceiverButton = document.getElementById("addReceiverButton");
@@ -40,6 +42,14 @@
 
   function valueOf(fieldName) {
     return fields[fieldName].value.trim();
+  }
+
+  function getSelectedVariety() {
+    if (valueOf("variety") === "직접입력") {
+      return valueOf("customVariety");
+    }
+
+    return valueOf("variety");
   }
 
   function valueOfInput(container, fieldName) {
@@ -133,7 +143,7 @@
       senderName: valueOf("senderName"),
       senderPhone: valueOf("senderPhone"),
       receivers: getReceiverCards().map(getReceiverData),
-      variety: valueOf("variety"),
+      variety: getSelectedVariety(),
       boxSize: valueOf("boxSize"),
       boxCount: boxCount
     };
@@ -201,7 +211,11 @@
 
       if (!value) {
         missing.push(productFieldLabels[fieldName]);
-        fields[fieldName].classList.add("is-invalid");
+        if (fieldName === "variety" && valueOf("variety") === "직접입력") {
+          fields.customVariety.classList.add("is-invalid");
+        } else {
+          fields[fieldName].classList.add("is-invalid");
+        }
       }
     });
 
@@ -232,6 +246,16 @@
 
     showAlert("", "success");
     return true;
+  }
+
+  function updateCustomVarietyVisibility() {
+    var shouldShow = valueOf("variety") === "직접입력";
+    customVarietyField.hidden = !shouldShow;
+
+    if (!shouldShow) {
+      fields.customVariety.value = "";
+      fields.customVariety.classList.remove("is-invalid");
+    }
   }
 
   function hideAddressSearch() {
@@ -384,7 +408,10 @@
   }
 
   orderForm.addEventListener("input", refreshOrderText);
-  orderForm.addEventListener("change", refreshOrderText);
+  orderForm.addEventListener("change", function () {
+    updateCustomVarietyVisibility();
+    refreshOrderText();
+  });
   receiverList.addEventListener("click", function (event) {
     var actionButton = event.target.closest("[data-action]");
 
@@ -407,5 +434,6 @@
   copyAccountButton.addEventListener("click", copyBankAccount);
   closeAddressSearch.addEventListener("click", hideAddressSearch);
 
+  updateCustomVarietyVisibility();
   createReceiverCard();
 }());
