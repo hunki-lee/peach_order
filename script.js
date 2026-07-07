@@ -2,7 +2,7 @@
   "use strict";
 
   var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
-  var SALES_NOTICE = "대극천 2kg 3.2만, 2.7만, 2만, 4kg 5만.";
+  var SALES_NOTICE = "대극천\n- 2kg: 3.2만 / 2.7만\n- 4kg: 5.2만 / 6.2만\n  (크기별 가격차이)\n\n황도\n- 4kg 10-11과: 4.7만\n- 4kg 12과: 4.2만\n- 4kg 13-14과: 3.7만\n- 4kg 15-16과: 3.2만";
 
   var fields = {
     senderName: document.getElementById("senderName"),
