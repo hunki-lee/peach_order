@@ -2,7 +2,7 @@
   "use strict";
 
   var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
-  var SALES_NOTICE = "상도(딱복)\n- 4kg 9-11과: 4.7만\n- 4kg 12과: 4.2만\n- 4kg 13-14과: 3.7만\n\n천중도(말랑이)\n- 4kg 13-14과: 3.7만\n- 4kg 15-16과: 3.2만";
+  var SALES_NOTICE = "천하제일도(준비중)";
 
   var fields = {
     senderName: document.getElementById("senderName"),
