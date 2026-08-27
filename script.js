@@ -2,7 +2,7 @@
   "use strict";
 
   var BANK_ACCOUNT = "농협 623083-56-013585 박민자";
-  var SALES_NOTICE = "2026년 판매마감 \n 감사합니다^^";
+  var SALES_NOTICE = "2026년 복숭아 판매마감 \n 감사합니다^^";
 
   var fields = {
     senderName: document.getElementById("senderName"),
